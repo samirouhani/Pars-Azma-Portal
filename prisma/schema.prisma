@@ -27,8 +27,31 @@ model Device {
   serialNumber   String        @unique
   modelName      String
   status         String        @default("OPERATIONAL") // OPERATIONAL, WARNING, OFFLINE
+  targetTemp        Float?         @default(37.0)
+  lastCalibrated    DateTime?
+  calibrationStatus String         @default("CERTIFIED") // CERTIFIED, PENDING, EXPIRED
   warrantyEnd    DateTime?
   organizationId String
   organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  alerts         Alert[]
+  telemetry      TelemetryLog[]
   createdAt      DateTime      @default(now())
+}
+
+model Alert {
+  id        String   @id @default(uuid())
+  severity  String   // CRITICAL, WARNING, INFO
+  message   String
+  status    String   // Active, Acknowledged, Resolved
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model TelemetryLog {
+  id          String   @id @default(uuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  temperature Float
+  timestamp   DateTime @default(now())
 }
